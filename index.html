@@ -10,22 +10,42 @@
 
 <style>
 body{
-margin:0;overflow:hidden;font-family:Arial,sans-serif;
+margin:0;
+overflow:hidden;
+font-family:Arial,sans-serif;
 background:linear-gradient(135deg,#1a1a2e,#16213e);
 }
-.hidden{display:none!important;}
 
-#loading-screen,#voice-overlay{
-position:fixed;inset:0;display:flex;
-justify-content:center;align-items:center;
-z-index:10000;color:white;
+.hidden{
+display:none!important;
 }
+
+#loading-screen,
+#voice-overlay{
+position:fixed;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:10000;
+color:white;
+}
+
 #loading-screen{
 background:linear-gradient(135deg,#1a1a2e,#16213e);
 flex-direction:column;
 }
-.loading-heart{font-size:60px;animation:pulse 1.5s infinite}
-@keyframes pulse{50%{transform:scale(1.2)}}
+
+.loading-heart{
+font-size:60px;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+50%{
+transform:scale(1.2);
+}
+}
 
 #voice-overlay{
 display:none;
@@ -34,35 +54,68 @@ background:rgba(26,26,46,.95);
 
 .card{
 background:rgba(255,255,255,.08);
-padding:35px;border-radius:25px;
-text-align:center;width:90%;max-width:500px;
+padding:35px;
+border-radius:25px;
+text-align:center;
+width:90%;
+max-width:500px;
 backdrop-filter:blur(20px);
 border:1px solid rgba(255,255,255,.1);
 }
 
-h2{color:#ff79a6}
-p{color:#ddd}
+h2{
+color:#ff79a6;
+}
+
+p{
+color:#ddd;
+}
 
 button{
 background:linear-gradient(45deg,#ff4081,#ff79a6);
-border:none;color:white;padding:18px 40px;
-font-size:20px;border-radius:50px;
-cursor:pointer;font-weight:bold;
+border:none;
+color:white;
+padding:18px 40px;
+font-size:20px;
+border-radius:50px;
+cursor:pointer;
+font-weight:bold;
 }
 
 #error-message{
-margin-top:15px;color:#ffd1d1;
+margin-top:15px;
+color:#ffd1d1;
 }
 
 #camera-indicator{
 position:fixed;
-bottom:30px;left:50%;
+bottom:30px;
+left:50%;
 transform:translateX(-50%);
 padding:10px 20px;
 background:rgba(0,0,0,.6);
 border-radius:20px;
-color:white;z-index:100;
+color:white;
+z-index:100;
 display:none;
+}
+
+#unmute-btn{
+display:none;
+position:fixed;
+bottom:90px;
+left:50%;
+transform:translateX(-50%);
+z-index:9999;
+background:linear-gradient(45deg,#ff4081,#ff79a6);
+color:white;
+border:none;
+padding:14px 25px;
+border-radius:50px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 5px 20px rgba(255,64,129,.4);
 }
 </style>
 </head>
@@ -76,8 +129,15 @@ display:none;
 
 <div id="voice-overlay">
 <div class="card">
-<h2><i class="fas fa-microphone"></i> Unlock Our Memory</h2>
-<p>Say the secret slogan to unlock this memory ❤️</p>
+
+<h2>
+<i class="fas fa-microphone"></i>
+Unlock Our Memory
+</h2>
+
+<p>
+Say the secret slogan to unlock this memory ❤️
+</p>
 
 <button id="submit-btn">
 <i class="fas fa-microphone"></i>
@@ -85,6 +145,7 @@ Speak To Unlock
 </button>
 
 <div id="error-message"></div>
+
 </div>
 </div>
 
@@ -92,24 +153,38 @@ Speak To Unlock
 Scanning for our memory...
 </div>
 
+<button id="unmute-btn">
+🔊 Tap for Audio
+</button>
+
 <a-scene
 mindar-image="imageTargetSrc: targets.mind;"
-vr-mode-ui="enabled: false"
-device-orientation-permission-ui="enabled: false"
-loading-screen="enabled: false">
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false"
+loading-screen="enabled:false">
 
 <a-assets>
-<video id="arVideo"
+
+<video
+id="arVideo"
 src="fotoo.mp4"
 loop
 playsinline
+muted
+autoplay
 crossorigin="anonymous"
-preload="auto"></video>
+preload="auto">
+</video>
+
 </a-assets>
 
-<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+<a-camera
+position="0 0 0"
+look-controls="enabled:false">
+</a-camera>
 
 <a-entity mindar-image-target="targetIndex:0">
+
 <a-video
 src="#arVideo"
 width="1.0"
@@ -117,65 +192,131 @@ height="1.35"
 position="0 0 0"
 visible="false">
 </a-video>
+
 </a-entity>
 
 </a-scene>
 
 <script>
-const SECRET_SLOGAN = "Forever in my heart";
 
-const overlay = document.getElementById("voice-overlay");
-const submitBtn = document.getElementById("submit-btn");
-const errorMessage = document.getElementById("error-message");
-const loadingScreen = document.getElementById("loading-screen");
-const cameraIndicator = document.getElementById("camera-indicator");
+const SECRET_SLOGAN =
+"Forever in my heart";
 
-const video = document.querySelector("#arVideo");
-const videoElement = document.querySelector("a-video");
-const scene = document.querySelector("a-scene");
+const overlay =
+document.getElementById(
+"voice-overlay"
+);
+
+const submitBtn =
+document.getElementById(
+"submit-btn"
+);
+
+const errorMessage =
+document.getElementById(
+"error-message"
+);
+
+const loadingScreen =
+document.getElementById(
+"loading-screen"
+);
+
+const cameraIndicator =
+document.getElementById(
+"camera-indicator"
+);
+
+const unmuteBtn =
+document.getElementById(
+"unmute-btn"
+);
+
+const video =
+document.querySelector(
+"#arVideo"
+);
+
+const videoElement =
+document.querySelector(
+"a-video"
+);
+
+const scene =
+document.querySelector(
+"a-scene"
+);
 
 let unlocked = false;
 
-submitBtn.addEventListener("click", () => {
+submitBtn.addEventListener(
+"click",
+() => {
 
 const SpeechRecognition =
 window.SpeechRecognition ||
 window.webkitSpeechRecognition;
 
 if(!SpeechRecognition){
+
 errorMessage.textContent =
 "Voice recognition not supported.";
+
 return;
 }
 
-const recognition = new SpeechRecognition();
+const recognition =
+new SpeechRecognition();
 
-recognition.lang = "en-US";
-recognition.interimResults = false;
-recognition.maxAlternatives = 1;
+recognition.lang =
+"en-US";
+
+recognition.interimResults =
+false;
+
+recognition.maxAlternatives =
+1;
 
 submitBtn.innerHTML =
 '<i class="fas fa-spinner fa-spin"></i> Listening...';
 
 recognition.start();
 
-recognition.onresult = (event) => {
+recognition.onresult =
+(event)=>{
 
 const spokenText =
-event.results[0][0].transcript
+event.results[0][0]
+.transcript
 .toLowerCase()
 .trim();
 
-console.log(spokenText);
-
-if(spokenText.includes(SECRET_SLOGAN.toLowerCase())){
+if(
+spokenText.includes(
+SECRET_SLOGAN
+.toLowerCase()
+)
+){
 
 unlocked = true;
-overlay.style.display = "none";
 
-videoElement.setAttribute("visible","true");
+overlay.style.display =
+"none";
 
-video.play().catch(e=>console.log(e));
+videoElement.setAttribute(
+"visible",
+"true"
+);
+
+video.muted = true;
+
+video.play()
+.catch(e=>
+console.log(e)
+);
+
+unmuteBtn.style.display =
+"block";
 
 cameraIndicator.innerHTML =
 "❤️ Memory unlocked";
@@ -190,45 +331,104 @@ submitBtn.innerHTML =
 '<i class="fas fa-microphone"></i> Speak To Unlock';
 };
 
-recognition.onerror = () => {
+recognition.onerror =
+()=>{
+
 errorMessage.textContent =
 "❌ Couldn't hear you. Try again.";
+
 submitBtn.innerHTML =
 '<i class="fas fa-microphone"></i> Speak To Unlock';
 };
-
 });
 
-scene.addEventListener("targetFound", () => {
+unmuteBtn.addEventListener(
+"click",
+()=>{
 
-cameraIndicator.style.display = "block";
+video.muted = false;
+video.volume = 1;
+
+video.play()
+.catch(e=>
+console.log(e)
+);
+
+unmuteBtn.style.display =
+"none";
+});
+
+scene.addEventListener(
+"targetFound",
+()=>{
+
+cameraIndicator.style.display =
+"block";
 
 if(!unlocked){
-overlay.style.display = "flex";
+
+overlay.style.display =
+"flex";
+
 cameraIndicator.innerHTML =
 "🔒 Say slogan to unlock";
+
 }else{
-videoElement.setAttribute("visible","true");
-video.play().catch(e=>console.log(e));
+
+videoElement.setAttribute(
+"visible",
+"true"
+);
+
+video.muted = true;
+
+video.play()
+.catch(e=>
+console.log(e)
+);
+
+unmuteBtn.style.display =
+"block";
+
 cameraIndicator.innerHTML =
 "❤️ Reliving our memory...";
 }
 });
 
-scene.addEventListener("targetLost", () => {
+scene.addEventListener(
+"targetLost",
+()=>{
+
 video.pause();
-videoElement.setAttribute("visible","false");
+
+videoElement.setAttribute(
+"visible",
+"false"
+);
+
+unmuteBtn.style.display =
+"none";
 
 if(!unlocked){
-overlay.style.display = "none";
-cameraIndicator.style.display = "none";
+
+overlay.style.display =
+"none";
+
+cameraIndicator.style.display =
+"none";
 }
 });
 
-window.addEventListener("load",()=>{
+window.addEventListener(
+"load",
+()=>{
+
 setTimeout(()=>{
-loadingScreen.classList.add("hidden");
+loadingScreen.classList.add(
+"hidden"
+);
 },1500);
+
 });
 </script>
 

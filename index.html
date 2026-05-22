@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LoveLock AR - Voice Unlock</title>
+
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+body{
+margin:0;overflow:hidden;font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#1a1a2e,#16213e);
+}
+.hidden{display:none!important;}
+
+#loading-screen,#voice-overlay{
+position:fixed;inset:0;display:flex;
+justify-content:center;align-items:center;
+z-index:10000;color:white;
+}
+#loading-screen{
+background:linear-gradient(135deg,#1a1a2e,#16213e);
+flex-direction:column;
+}
+.loading-heart{font-size:60px;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+
+#voice-overlay{
+display:none;
+background:rgba(26,26,46,.95);
+}
+
+.card{
+background:rgba(255,255,255,.08);
+padding:35px;border-radius:25px;
+text-align:center;width:90%;max-width:500px;
+backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,.1);
+}
+
+h2{color:#ff79a6}
+p{color:#ddd}
+
+button{
+background:linear-gradient(45deg,#ff4081,#ff79a6);
+border:none;color:white;padding:18px 40px;
+font-size:20px;border-radius:50px;
+cursor:pointer;font-weight:bold;
+}
+
+#error-message{
+margin-top:15px;color:#ffd1d1;
+}
+
+#camera-indicator{
+position:fixed;
+bottom:30px;left:50%;
+transform:translateX(-50%);
+padding:10px 20px;
+background:rgba(0,0,0,.6);
+border-radius:20px;
+color:white;z-index:100;
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading-screen">
+<div class="loading-heart">💖</div>
+<h3>LoveLockFrame by FotoMagic</h3>
+</div>
+
+<div id="voice-overlay">
+<div class="card">
+<h2><i class="fas fa-microphone"></i> Unlock Our Memory</h2>
+<p>Say the secret slogan to unlock this memory ❤️</p>
+
+<button id="submit-btn">
+<i class="fas fa-microphone"></i>
+Speak To Unlock
+</button>
+
+<div id="error-message"></div>
+</div>
+</div>
+
+<div id="camera-indicator">
+Scanning for our memory...
+</div>
+
+<a-scene
+mindar-image="imageTargetSrc: targets.mind;"
+vr-mode-ui="enabled: false"
+device-orientation-permission-ui="enabled: false"
+loading-screen="enabled: false">
+
+<a-assets>
+<video id="arVideo"
+src="fotoo.mp4"
+loop
+playsinline
+crossorigin="anonymous"
+preload="auto"></video>
+</a-assets>
+
+<a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+<a-entity mindar-image-target="targetIndex:0">
+<a-video
+src="#arVideo"
+width="1.0"
+height="1.35"
+position="0 0 0"
+visible="false">
+</a-video>
+</a-entity>
+
+</a-scene>
+
+<script>
+const SECRET_SLOGAN = "Forever in my heart";
+
+const overlay = document.getElementById("voice-overlay");
+const submitBtn = document.getElementById("submit-btn");
+const errorMessage = document.getElementById("error-message");
+const loadingScreen = document.getElementById("loading-screen");
+const cameraIndicator = document.getElementById("camera-indicator");
+
+const video = document.querySelector("#arVideo");
+const videoElement = document.querySelector("a-video");
+const scene = document.querySelector("a-scene");
+
+let unlocked = false;
+
+submitBtn.addEventListener("click", () => {
+
+const SpeechRecognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+errorMessage.textContent =
+"Voice recognition not supported.";
+return;
+}
+
+const recognition = new SpeechRecognition();
+
+recognition.lang = "en-US";
+recognition.interimResults = false;
+recognition.maxAlternatives = 1;
+
+submitBtn.innerHTML =
+'<i class="fas fa-spinner fa-spin"></i> Listening...';
+
+recognition.start();
+
+recognition.onresult = (event) => {
+
+const spokenText =
+event.results[0][0].transcript
+.toLowerCase()
+.trim();
+
+console.log(spokenText);
+
+if(spokenText.includes(SECRET_SLOGAN.toLowerCase())){
+
+unlocked = true;
+overlay.style.display = "none";
+
+videoElement.setAttribute("visible","true");
+
+video.play().catch(e=>console.log(e));
+
+cameraIndicator.innerHTML =
+"❤️ Memory unlocked";
+
+}else{
+
+errorMessage.textContent =
+"❌ Wrong slogan. Try again ❤️";
+}
+
+submitBtn.innerHTML =
+'<i class="fas fa-microphone"></i> Speak To Unlock';
+};
+
+recognition.onerror = () => {
+errorMessage.textContent =
+"❌ Couldn't hear you. Try again.";
+submitBtn.innerHTML =
+'<i class="fas fa-microphone"></i> Speak To Unlock';
+};
+
+});
+
+scene.addEventListener("targetFound", () => {
+
+cameraIndicator.style.display = "block";
+
+if(!unlocked){
+overlay.style.display = "flex";
+cameraIndicator.innerHTML =
+"🔒 Say slogan to unlock";
+}else{
+videoElement.setAttribute("visible","true");
+video.play().catch(e=>console.log(e));
+cameraIndicator.innerHTML =
+"❤️ Reliving our memory...";
+}
+});
+
+scene.addEventListener("targetLost", () => {
+video.pause();
+videoElement.setAttribute("visible","false");
+
+if(!unlocked){
+overlay.style.display = "none";
+cameraIndicator.style.display = "none";
+}
+});
+
+window.addEventListener("load",()=>{
+setTimeout(()=>{
+loadingScreen.classList.add("hidden");
+},1500);
+});
+</script>
+
+</body>
+</html>
